@@ -4,8 +4,9 @@ class RangeSensorController:
         Подсключение к датчику
         """
     
-    def getValue() -> int:
+    def getValue(self) -> int:
         """
         Возвращает значение в миллиметрах
         """
+        return 1
         

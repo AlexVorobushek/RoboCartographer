@@ -14,52 +14,54 @@ class Robot:
         ) -> None:
         self.sensor: RangeSensorController = sensor
         self.wheels: WheelsController = wheels
+
         self.coors: np.array = coors
         self.orientation: float = orientationRadian
         self.actualTime = time.time()
-    
-    def refresh(self) -> tuple:
-        """
-        обновляет положение робота
-        """
-        speed, radius = self.wheels.getRelativeMotionLaw()
-        nowtime = time.time()
+        self.sensorValue = sensor.getValue()
+        self.velocity, self.radius = wheels.getRelativeMotionLaw()
 
-        deltaTime = nowtime - self.actualTime
-        # omega = volume/radius
+    def _getNewPositioning(self, newV, newR, newT):
+        newV, newR = self.wheels.getRelativeMotionLaw()
+        newT = time.time()
 
-        # # Вычисляем угол поворота
-        # angle = omega*deltaTime
-
-        # rightNormal = np.dot(np.array([[0,  1],
-        #                         [-1, 0]]), self.orientation)
-        # center = rightNormal*radius + self.coors
-
-        # coors_by_center = self.coors - center
-        # phi = np.acos(coors_by_center[0]) # начальная фаза
-
-        # new_coors_by_center = np.array((radius*np.cos(angle+phi), radius*np.sin(angle+phi))).transpose()
-
-        # self.coors = new_coors_by_center+center
-        # self.orientation = np.dot(np.array([[np.cos(angle), -np.sin(angle)],
-        #                             [np.sin(angle), np.cos(angle)]]), self.orientation)
-        # self.actualTime += deltaTime
-        angle = (speed * deltaTime) / radius
+        deltaTime = newT - self.actualTime
+        angle = (newV * deltaTime) / newR
 
         # Новая ориентация
         new_orientation = self.orientation + angle
 
         # Расстояние, пройденное по окружности
-        distance = speed * deltaTime
+        distance = newV * deltaTime
 
         # Новые координаты
-        new_x = self.coors[0] + radius * math.sin(new_orientation) - radius * math.sin(self.orientation)
-        new_y = self.coors[1] + radius * (1 - math.cos(new_orientation)) - radius * (1 - math.cos(self.orientation))
+        new_x = self.coors[0] + newR * math.sin(new_orientation) - newR * math.sin(self.orientation)
+        new_y = self.coors[1] + newR * (1 - math.cos(new_orientation)) - newR * (1 - math.cos(self.orientation))
         self.coors = [new_x, new_y]
-        self.orientation = new_orientation
-        self.actualTime = nowtime
-        return (new_x, new_y), 1
+        
+        return (new_x, new_y), new_orientation
+
+    
+    def refresh(self) -> None:
+        """
+        обновляет все характеристики робота
+        """
+        newVelosity, newRadius = self.wheels.getRelativeMotionLaw()
+        newTime = time.time()
+
+        self.sensorValue = self.sensor.getValue()
+        self.coors, self.orientation = self._getNewPositioning(newVelosity, newRadius, newTime)
+        self.actualTime = newTime
 
     def log(self) -> None:
-        pass
-
+        data = {
+                'time': round(self.actualTime, 2),
+                'x': round(self.coors[0], 2),
+                'y': round(self.coors[1], 2),
+                'orientation': round(self.orientation, 2),
+                'sensorValue': round(self.sensorValue, 2),
+        }
+        with open("log.txt", "a") as file:
+            file.write('\t'.join(map(str, data.values()))+"\n")
+        return data
+    
