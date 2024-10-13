@@ -2,7 +2,7 @@ import math
 
 class WheelsController():
     def __init__(self) -> None:
-        pass
+        self.R=-10
 
     def getRelativeMotionLaw(self) -> tuple:
         """
@@ -15,4 +15,5 @@ class WheelsController():
         +radius - робот поворачивает вправо при двежении вперед
         -radius - робот поворачивает влево при движении вперед
         """
-        return 2*math.pi, 10
+        self.R += 0.01
+        return 2*math.pi, self.R

@@ -1,5 +1,6 @@
 from rangeSensorController import RangeSensorController
 from wheelsController import WheelsController
+from logger import Logger
 import time
 import numpy as np
 import math
@@ -20,6 +21,7 @@ class Robot:
         self.actualTime = time.time()
         self.sensorValue = sensor.getValue()
         self.velocity, self.radius = wheels.getRelativeMotionLaw()
+        self.logger = Logger()
 
     def _getNewPositioning(self, newV, newR, newT):
         newV, newR = self.wheels.getRelativeMotionLaw()
@@ -54,14 +56,5 @@ class Robot:
         self.actualTime = newTime
 
     def log(self) -> None:
-        data = {
-                'time': round(self.actualTime, 2),
-                'x': round(self.coors[0], 2),
-                'y': round(self.coors[1], 2),
-                'orientation': round(self.orientation, 2),
-                'sensorValue': round(self.sensorValue, 2),
-        }
-        with open("log.txt", "a") as file:
-            file.write('\t'.join(map(str, data.values()))+"\n")
-        return data
+        return self.logger.log(self)
     

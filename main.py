@@ -1,6 +1,4 @@
 from time import sleep
-from matplotlib import pyplot as plt
-
 
 def setup():
     from robot import Robot
@@ -8,6 +6,7 @@ def setup():
     from wheelsController import WheelsController
     global drawing
     drawing = True
+
     if drawing:
         from drawController import DrawController
         global history, painter
@@ -18,8 +17,6 @@ def setup():
     wheels = WheelsController()
     global robot
     robot = Robot(sensor, wheels)
-
-    with open("log.txt", "w"): pass
     
 
 def loop():
@@ -34,4 +31,4 @@ if __name__ == "__main__":
     setup()
     while True:
         loop()
-        sleep(0.001)
+        sleep(0.01)
